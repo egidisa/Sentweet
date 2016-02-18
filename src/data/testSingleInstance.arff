@@ -1,0 +1,7 @@
+@relation whatever
+
+@attribute classPol {0,4}
+@attribute text String
+
+@data
+?,'I m so happy today'

@@ -1,0 +1,6 @@
+@relation test-ds
+
+@attribute text String
+
+@data
+'happy today'
