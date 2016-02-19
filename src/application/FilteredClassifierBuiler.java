@@ -17,6 +17,7 @@ import weka.filters.unsupervised.attribute.StringToWordVector;
 import java.io.*;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -210,6 +211,33 @@ public class FilteredClassifierBuiler {
 
 		return prediction;		
 	}
+	
+	private ArrayList<double[]> classifyARFF(String filePath, Classifier model) throws Exception {
+		ArrayList<double[]> labeledAL = new ArrayList<double[]>();
+		double[] prediction = null;
+		Instances unlabeled = new Instances( new BufferedReader( new FileReader(filePath)));
+		Instances labeled = new Instances(unlabeled);
+		// set class attribute
+		unlabeled.setClassIndex(unlabeled.numAttributes() - 1);	
+		labeled.setClassIndex(0);	
+		
+		for (int i = 0; i < unlabeled.numInstances(); i++) {
+			//double clsLabel = model.classifyInstance(unlabeled.instance(i));
+			
+			prediction = model.distributionForInstance(unlabeled.instance(i));
+			labeledAL.add(prediction);
+			if (prediction[0] > 0.5f) labeled.instance(i).setClassValue("0");
+			else labeled.instance(i).setClassValue("4");
+			System.out.println("labeled instance "+unlabeled.instance(i)+" - NEG: "+prediction[0] +" POS: "+ prediction[1]);
+			 }
+		 BufferedWriter writer = new BufferedWriter(
+                 new FileWriter("labeled.arff"));
+		 writer.write(labeled.toString());
+		 writer.newLine();
+		 writer.flush();
+		 writer.close();
+		return labeledAL;		
+	}
 
 	/**
 	 * Main method. It parses the raw txt file and tokenizes it.
@@ -231,8 +259,9 @@ public class FilteredClassifierBuiler {
 		//System.out.println("Total building time: " + (time2-time1));
 
 		//TODO - save the built model
-		//TODO - remember to check for smiles when using the model
+		//TODO - check for smiles when using the model
 		
+		//TODO - evaluate best classifier between SVM, Naive multinomial and standard naive
 		//load model build in weka
 		Classifier cls = (Classifier) weka.core.SerializationHelper.read("./src/data/dummy.model");
 		double[] prediction = fcb.classifyString("awful", cls);
@@ -242,6 +271,12 @@ public class FilteredClassifierBuiler {
         for (double i : prediction) {
             System.out.println(i);
         }
+        System.out.println("Classifing file "+"testTweets.arff");
+        ArrayList<double[]> hopefullyitwillwork = fcb.classifyARFF("testTweets.arff", cls);
+        //for (double[] i : predicted) {
+        //    System.out.println(i);
+        //}
+        
 	}
 
 
