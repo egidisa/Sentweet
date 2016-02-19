@@ -32,7 +32,7 @@ public class FilteredClassifierBuiler {
 	 * Instances to be indexed.
 	 */
 	Instances inputInstances;
-	
+	static Classifier cls;
 	/**
 	 * Instances after indexing.
 	 */
@@ -239,8 +239,16 @@ public class FilteredClassifierBuiler {
 		return labeledAL;		
 	}
 
+	public ArrayList<double[]> classifyInstances() throws Exception{
+		//load model
+		cls = (Classifier) weka.core.SerializationHelper.read("./src/data/dummy.model");
+		//use it to classify the test ARFF
+		ArrayList<double[]> hopefullyitwillwork = this.classifyARFF("testTweets.arff", cls);
+		return hopefullyitwillwork;
+	}
+	
 	/**
-	 * Main method. It parses the raw txt file and tokenizes it.
+	 * Main method. Currently used for debug.
 	 * @throws Exception 
 	 */
 	public static void main(String[] args) throws Exception {
@@ -263,14 +271,14 @@ public class FilteredClassifierBuiler {
 		
 		//TODO - evaluate best classifier between SVM, Naive multinomial and standard naive
 		//load model build in weka
-		Classifier cls = (Classifier) weka.core.SerializationHelper.read("./src/data/dummy.model");
-		double[] prediction = fcb.classifyString("awful", cls);
+		cls = (Classifier) weka.core.SerializationHelper.read("./src/data/dummy.model");
+		//double[] prediction = fcb.classifyString("awful", cls);
 		//get the name of the class value
-		System.out.println("The predicted value of instance : "); 
-		NumberFormat nf = new DecimalFormat("0.#");
-        for (double i : prediction) {
-            System.out.println(i);
-        }
+		//System.out.println("The predicted value of instance : "); 
+		//NumberFormat nf = new DecimalFormat("0.#");
+        //for (double i : prediction) {
+        //    System.out.println(i);
+        //}
         System.out.println("Classifing file "+"testTweets.arff");
         ArrayList<double[]> hopefullyitwillwork = fcb.classifyARFF("testTweets.arff", cls);
         //for (double[] i : predicted) {
