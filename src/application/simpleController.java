@@ -87,6 +87,7 @@ public class simpleController implements Initializable {
 						e.printStackTrace();
 					}
 			    	label1.setText("Preprocessed tweets saved to file testTweets.arff");
+				    
 			    	Context.setTweets(tweets);
 			    	btnClassify.setDisable(false);
 		    	}
@@ -94,12 +95,26 @@ public class simpleController implements Initializable {
 	    });
 	}
 
+	private double[] IterateList(ArrayList<double[]> labeled) {
+		double polarity[] = new double[2];
+		int pos=0;
+		int neg=0;
+
+		for(double[] i : labeled){
+			if (i[0] > 0.5f) neg++;
+			else pos++;			
+		}
+		polarity[0] = pos;
+		polarity[1] = neg;
+		System.out.println("Pos: "+pos+" Neg: "+neg);
+		return polarity;
+	}
+	
 	void retrieveTweets(String key) throws TwitterException{ 
 		String tmp;
 		int i = 0;
 		Twitter twitter = new TwitterFactory().getInstance();
 		List<String> result = new LinkedList<String>();
-		//TODO - avoid taking duplicate RTs? If so, maybe more rounds are needed
 		//for (int page = 1; page <= 10; page++) {
 			Query query = new Query(key+" +exclude:retweets");
 			query.setCount(100); // set tweets per page to 100

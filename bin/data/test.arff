@@ -1,0 +1,18 @@
+@relation test-ds
+
+@attribute firstNumeric numeric
+@attribute secondNumeric numeric
+@attribute aNominal {yes,no}
+
+@data
+1.23,1.24,yes
+7.919642,6.44038,yes
+9.400567,5.808431,yes
+8.137767,8.362607,yes
+6.419064,9.831068,yes
+7.104691,7.977213,yes
+9.455372,7.086842,yes
+7.198279,6.466819,yes
+9.3033,5.980189,yes
+9.669556,5.824943,yes
+8.411307,9.08174,yes

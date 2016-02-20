@@ -1,66 +1,44 @@
 package application;
 
 import java.io.BufferedReader;
-import java.io.DataInputStream;
-import java.io.FileInputStream;
-import java.io.FileWriter;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.ListIterator;
 import java.util.ResourceBundle;
 
 import javafx.animation.TranslateTransition;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.geometry.Bounds;
-import javafx.scene.Node;
-import javafx.scene.Parent;
 import javafx.scene.chart.PieChart;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.paint.Color;
-import javafx.stage.Stage;
-import javafx.util.Callback;
+
 import javafx.util.Duration;
 import model.Context;
 import model.Tweet;
-import twitter4j.Query;
-import twitter4j.QueryResult;
-import twitter4j.Status;
-import twitter4j.Twitter;
-import twitter4j.TwitterException;
-import twitter4j.TwitterFactory;
-
-import weka.classifiers.*;
 import weka.core.Instances;
-import weka.core.Utils;
 
 public class secondController implements Initializable {
 
-	// Value injected by FXMLLoader
+	// Values injected by FXMLLoader
 	@FXML private TableView<Tweet> tableView;
 	@FXML private TableColumn<Tweet,String> tbUser;
 	@FXML private TableColumn<Tweet, String> tbTweet;
+	@FXML private TableColumn<Tweet, String> tbPol;
 	@FXML private PieChart pieChart;
+	@FXML private TextField lblPos,lblNeg,lblModel;
+	//@FXML private ImageView imgLoad;
 	private ObservableList<Tweet> tweets;
+	ArrayList<double[]> labeled;
 	boolean negative;
 
 	@Override // This method is called by the FXMLLoader when initialisation is complete
@@ -70,21 +48,43 @@ public class secondController implements Initializable {
 	    tweets = Context.getTweets();
 	    tbUser.setCellValueFactory(new PropertyValueFactory<Tweet, String>("user"));
 	    tbTweet.setCellValueFactory(new PropertyValueFactory<Tweet, String>("text"));
-	    tableView.setItems(tweets);
-	    //TODO - replace with actual data
-	    double polarity[] = new double[2];
+	    tbPol.setCellValueFactory(new PropertyValueFactory<Tweet, String>("polarity"));
+
+	    double CntPolarity[] = new double[2];
 	    FilteredClassifierBuiler fcb = new FilteredClassifierBuiler();
 	    try {
-			ArrayList<double[]> labeled = fcb.classifyInstances();
-			polarity = IterateList(labeled);
+			labeled = fcb.classifyInstances();
+			CntPolarity = IterateList(labeled);
+			
+			lblPos.setText((int)CntPolarity[0]+" / 100");
+			lblNeg.setText((int)CntPolarity[1]+" / 100");
+			lblModel.setText("NaiveBayesianMultinomial");
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	    
+	    //"dirty" cycle to insert labels of the tweets in the observablelist containing the raw ones
+	    int i =0;
+	    if (!tweets.isEmpty()&&tweets.size() == 100){
+				try {
+					Instances label = new Instances( new BufferedReader( new FileReader("labeled.arff")));	    	
+					for(Tweet t:tweets){
+						if (label.instance(i).value(0)==1.0) t.setPolarity(4);
+						else if (label.instance(i).value(0) == 0.0) t.setPolarity(0);
+						i++;
+					}
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+	    	//TODO- se trovo uno smile sorridente dovrebbe essere happy!
+	    }
+	    
+	    tableView.setItems(tweets);
 	    ObservableList<PieChart.Data> pieChartData =
 	            FXCollections.observableArrayList(
-	            new PieChart.Data("Positive", polarity[0]),
-	            new PieChart.Data("Negative", polarity[1]));
+	            new PieChart.Data("Positive", CntPolarity[0]),
+	            new PieChart.Data("Negative", CntPolarity[1]));
 	    pieChart.setData(pieChartData);
 	    for(PieChart.Data d : pieChartData){
 	    	d.getNode().addEventHandler(MouseEvent.MOUSE_ENTERED, event -> {
@@ -103,39 +103,24 @@ public class secondController implements Initializable {
 	            tt.play();
 	        });
 	    }
+	    //imgLoad.setVisible(false);
+	}
+
+	private int roundPolarity(double[] ds) {
+		int polarity;
+		if (ds[0]>=0.5) polarity = 0;
+		else polarity = 4;
+		return polarity;
 	}
 
 	private double[] IterateList(ArrayList<double[]> labeled) {
 		double polarity[] = new double[2];
 		int pos=0;
 		int neg=0;
-		int cnt = 0;
-		negative = false;
-		
+
 		for(double[] i : labeled){
-			if (i[0] > 0.5f) { neg++;negative = true; }
-			else { pos++; negative=false; }
-			
-			tbTweet.setCellFactory(new Callback<TableColumn<Tweet,String>, TableCell<Tweet,String>>() {
-		        public TableCell<Tweet,String> call(TableColumn<Tweet,String> param) {
-		            return new TableCell<Tweet, String>() {
-		                @Override
-		                public void updateItem(String item, boolean empty) {
-		                    super.updateItem(item, empty);
-		                    if (negative == true) {
-		                        this.setTextFill(Color.RED);
-		                        setText(item);
-		                    }
-		                    else {
-		                    	 this.setTextFill(Color.GREEN);
-			                     setText(item);
-		                    }
-		                }
-		            };
-		        }
-		    });
-			
-			cnt++;
+			if (i[0] > 0.5f) neg++;
+			else pos++;			
 		}
 		polarity[0] = pos;
 		polarity[1] = neg;

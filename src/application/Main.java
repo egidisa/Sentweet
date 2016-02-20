@@ -18,7 +18,7 @@ public class Main extends Application {
 	public void start(Stage primaryStage) {
 		try {
 	        StackPane page = (StackPane) FXMLLoader.load(Main.class.getResource("test2.fxml"));
-	        AnchorPane page2 = (AnchorPane) FXMLLoader.load(Main.class.getResource("second.fxml"));
+	        //AnchorPane page2 = (AnchorPane) FXMLLoader.load(Main.class.getResource("second.fxml"));
 	        Scene scene = new Scene(page);
 	        scene.getStylesheets().add("application/application.css");
 	        primaryStage.setScene(scene);
