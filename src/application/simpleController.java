@@ -17,6 +17,7 @@ import java.util.ResourceBundle;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -26,6 +27,7 @@ import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
@@ -50,6 +52,7 @@ public class simpleController implements Initializable {
 	@FXML private TextField txtField; 
 	@FXML private Label label1;
 	@FXML private AnchorPane content;
+	@FXML private ImageView imagetwi;
 	String key;
     private ObservableList<Tweet> tweets =  FXCollections.observableArrayList();
 	@FXML private void HandleShowSecond() throws IOException {
@@ -75,26 +78,28 @@ public class simpleController implements Initializable {
 				   	label1.setText("Insert a search key");
 				}
 			   	else {	
+			   		imagetwi.setScaleX(-1);
 			   		label1.setTextFill(Color.BLACK);
 			    	btnClassify.setDisable(true);
 			    	key = txtField.getText();
 			    	System.out.println("Search key: "+key);
 			    	//myButton.setDisable(true);
 			    	try {
+			    		imagetwi.setScaleX(-1);
 			    		label1.setText("Retrieving tweets...");
 						retrieveTweets(key);
 					} catch (TwitterException e) {
 						e.printStackTrace();
 					}
 			    	label1.setText("Preprocessed tweets saved to file testTweets.arff");
-				    
 			    	Context.setTweets(tweets);
 			    	btnClassify.setDisable(false);
+			    		//myRunnable.shutdown();
 		    	}
 		    }
 	    });
-	}
-
+	}	
+	
 	private double[] IterateList(ArrayList<double[]> labeled) {
 		double polarity[] = new double[2];
 		int pos=0;
@@ -125,7 +130,7 @@ public class simpleController implements Initializable {
 		//	if(qrTweets.size() == 0) break;
 		 		for(Status t : qrTweets) {
 		 			System.out.println(t.getText());
-		 			tmp = pp.preprocessDocument(t.getText());
+		 			tmp = pp.preprocessDocumentKeepSmiles(t.getText());
 		 			tmp = tmp.replaceAll("[\n\r]", "");
 		 			System.out.println("\tPreprocessed tweet: "+tmp);
 		 			result.add("?,"+Utils.quote(tmp));

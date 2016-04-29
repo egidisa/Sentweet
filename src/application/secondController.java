@@ -11,6 +11,7 @@ import java.util.ResourceBundle;
 import javafx.animation.TranslateTransition;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Bounds;
@@ -36,11 +37,14 @@ public class secondController implements Initializable {
 	@FXML private TableColumn<Tweet, String> tbPol;
 	@FXML private PieChart pieChart;
 	@FXML private TextField lblPos,lblNeg,lblModel;
+	
 	//@FXML private ImageView imgLoad;
 	private ObservableList<Tweet> tweets;
 	ArrayList<double[]> labeled;
 	boolean negative;
-
+	double[] CntPolarity;
+	//TODO - exit deletes dataset
+	
 	@Override // This method is called by the FXMLLoader when initialisation is complete
 	public void initialize(URL fxmlFileLocation, ResourceBundle resources) {
 	    assert tableView != null : "fx:id=\"tableView\" was not injected.";
@@ -50,14 +54,14 @@ public class secondController implements Initializable {
 	    tbTweet.setCellValueFactory(new PropertyValueFactory<Tweet, String>("text"));
 	    tbPol.setCellValueFactory(new PropertyValueFactory<Tweet, String>("polarity"));
 
-	    double CntPolarity[] = new double[2];
+	    CntPolarity = new double[2];
 	    FilteredClassifierBuiler fcb = new FilteredClassifierBuiler();
 	    try {
 			labeled = fcb.classifyInstances();
 			CntPolarity = IterateList(labeled);
 			
-			lblPos.setText((int)CntPolarity[0]+" / 100");
-			lblNeg.setText((int)CntPolarity[1]+" / 100");
+			lblPos.setText((int)CntPolarity[0]+" / "+ tweets.size());
+			lblNeg.setText((int)CntPolarity[1]+" / "+tweets.size());
 			lblModel.setText("NaiveBayesianMultinomial");
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -65,7 +69,7 @@ public class secondController implements Initializable {
 	    
 	    //"dirty" cycle to insert labels of the tweets in the observablelist containing the raw ones
 	    int i =0;
-	    if (!tweets.isEmpty()&&tweets.size() == 100){
+	    if (!tweets.isEmpty()){ //&&tweets.size() == 100
 				try {
 					Instances label = new Instances( new BufferedReader( new FileReader("labeled.arff")));	    	
 					for(Tweet t:tweets){
@@ -77,7 +81,6 @@ public class secondController implements Initializable {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-	    	//TODO- se trovo uno smile sorridente dovrebbe essere happy!
 	    }
 	    
 	    tableView.setItems(tweets);
@@ -105,7 +108,7 @@ public class secondController implements Initializable {
 	    }
 	    //imgLoad.setVisible(false);
 	}
-
+	
 	private int roundPolarity(double[] ds) {
 		int polarity;
 		if (ds[0]>=0.5) polarity = 0;
@@ -113,6 +116,13 @@ public class secondController implements Initializable {
 		return polarity;
 	}
 
+	public void reset(){
+		tweets.clear();
+		Context.setTweets(null);
+		this.CntPolarity = null;
+		this.CntPolarity = new double[2];
+	}
+	
 	private double[] IterateList(ArrayList<double[]> labeled) {
 		double polarity[] = new double[2];
 		int pos=0;

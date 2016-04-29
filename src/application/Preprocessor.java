@@ -117,9 +117,19 @@ public class Preprocessor {
 	public String removeSymbols(String item) {
 		String result = item;
 		result = result.replaceAll("&quot;", "\"");
-		result = result.replaceAll("&amp;", "&");
+		result = result.replaceAll("&amp;", "&"); 
 		result = result.replaceAll("&lt;", "<");
 		result = result.replaceAll("&gt;", ">");
+		//test symbols 
+		//result = result.replaceAll("[|]", "");
+		//result = result.replaceAll("[+]", "");
+		//result = result.replaceAll("[--]","");
+		return result;
+	}
+	
+	public String removeNumbers(String item) {
+		String result = item;
+		result = result.replaceAll("[0-9]", "");
 		return result;
 	}
 	
@@ -153,6 +163,33 @@ public class Preprocessor {
 				result = replaceEmoticons(result);
 			else
 				result = removeEmoticons(result);
+			StringTokenizer st2 = new StringTokenizer(result, ".:#)(_");
+			String tmp = "";
+			String tmp2 = "";
+			while (st2.hasMoreTokens()) {
+				tmp = st2.nextToken();
+				tmp = recognizeLaugh(tmp);
+				tmp2 = tmp2 + " " + removeUsername(tmp); 
+			}
+			result = tmp2;
+			result = result.replaceAll("lu+v+", "love");
+			result = removeRepeatedCharacters(result);
+			result = removeSymbols(result);
+			result = removeNumbers(result);
+			result_fin = result_fin + result;
+		}
+		//System.out.println("Proprocessed: "+result);
+		return result_fin;
+	}
+	
+	public String preprocessDocumentKeepSmiles(String item) {
+		String result_fin = "";
+		String result = item;
+		StringTokenizer st1 = new StringTokenizer(result, " ,?![]");
+		while (st1.hasMoreTokens()) {
+			String str = st1.nextToken();
+			result = removeUrl(str);
+			result = replaceEmoticons(result);
 			StringTokenizer st2 = new StringTokenizer(result, ".:#)(_");
 			String tmp = "";
 			String tmp2 = "";

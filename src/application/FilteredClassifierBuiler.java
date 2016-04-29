@@ -4,6 +4,8 @@ import weka.classifiers.Classifier;
 import weka.classifiers.bayes.NaiveBayes;
 import weka.classifiers.meta.FilteredClassifier;
 import weka.core.Attribute;
+import weka.core.Debug;
+import weka.core.DenseInstance;
 import weka.core.FastVector;
 import weka.core.Instance;
 import weka.core.Instances;
@@ -74,8 +76,8 @@ public class FilteredClassifierBuiler {
 			s2wv.setDoNotOperateOnPerClassBasis(true);
 			s2wv.setLowerCaseTokens(true);
 			//filter.setStemmer();
-			s2wv.setUseStoplist(true);
-			s2wv.setStopwords(new File("stopwords.txt"));
+			//s2wv.setsetUseStoplist(true);
+			//s2wv.setStopwords(new File("stopwords.txt"));
 			s2wv.setInputFormat(inputInstances);
 			// Filter the input instances into the output ones
 			//outputInstances = Filter.useFilter(inputInstances,s2wv);
@@ -107,7 +109,9 @@ public class FilteredClassifierBuiler {
 
 			// train and make predictions
 			fc.buildClassifier(inputInstances);
-			System.out.println("tutto 5");
+			
+			// save the built model to file
+			Debug.saveToFile("/data/WEKA_Models", fc);
 		}
 		catch (Exception e) {
 			System.out.println("Problem found when training"+e);
@@ -188,7 +192,8 @@ public class FilteredClassifierBuiler {
 		String tmp = pp.preprocessDocument(stringToClassify);
 		//StringTokenizer st = new StringTokenizer(tmp, " ");
 		Instances unlabeled = new Instances( new BufferedReader( new FileReader("./src/data/testSingleInstance.arff")));
-		Instance inst = new Instance(unlabeled.numAttributes());
+		//TODO
+		Instance inst = new DenseInstance(unlabeled.numAttributes());
 		inst.setDataset(unlabeled);
 		int j = 0;
 		/*while(j<unlabeled.numAttributes()) {
@@ -241,7 +246,15 @@ public class FilteredClassifierBuiler {
 
 	public ArrayList<double[]> classifyInstances() throws Exception{
 		//load model
-		cls = (Classifier) weka.core.SerializationHelper.read("./src/data/dummy.model");
+		cls = (Classifier) weka.core.SerializationHelper.read("./src/data/SMOModel.model");
+		//use it to classify the test ARFF
+		ArrayList<double[]> hopefullyitwillwork = this.classifyARFF("testTweets.arff", cls);
+		return hopefullyitwillwork;
+	}
+	
+	public ArrayList<double[]> classifyInstances(String modelName) throws Exception{
+		//load model
+		cls = (Classifier) weka.core.SerializationHelper.read("./src/data/"+modelName+".model");
 		//use it to classify the test ARFF
 		ArrayList<double[]> hopefullyitwillwork = this.classifyARFF("testTweets.arff", cls);
 		return hopefullyitwillwork;
@@ -254,20 +267,18 @@ public class FilteredClassifierBuiler {
 	public static void main(String[] args) throws Exception {
 		long time1, time2;
 		FilteredClassifierBuiler fcb = new FilteredClassifierBuiler();
-		//fcb.preprocessRaw("train.txt","outputparser.arff");
-		
+		fcb.preprocessRaw("ToProcess.txt","Preprocessed.arff");
+		System.out.println("Done!");
 		//TODO - fix enormous amount of time needed for building the filtered classifier
-		
-		//fcb.loadARFF("outputparser.arff");
-		//time1 = System.currentTimeMillis();
-		//System.out.println("Started building model at: " + time1);
-		//fcb.buildClassifier();
-		//time2 = System.currentTimeMillis();
-		//System.out.println("Finished building model at: " + time2);
-		//System.out.println("Total building time: " + (time2-time1));
-
-		//TODO - save the built model
-		//TODO - check for smiles when using the model
+		/*
+		fcb.loadARFF("outputparser.arff");
+		time1 = System.currentTimeMillis();
+		System.out.println("Started building model at: " + time1);
+		fcb.buildClassifier();
+		time2 = System.currentTimeMillis();
+		System.out.println("Finished building model at: " + time2);
+		System.out.println("Total building time: " + (time2-time1));
+		System.out.println("Model saved at /data/WEKA_Models ");*/
 		
 		//TODO - evaluate best classifier between SVM, Naive multinomial and standard naive
 		//load model build in weka
@@ -279,8 +290,8 @@ public class FilteredClassifierBuiler {
         //for (double i : prediction) {
         //    System.out.println(i);
         //}
-        System.out.println("Classifing file "+"testTweets.arff");
-        ArrayList<double[]> hopefullyitwillwork = fcb.classifyARFF("testTweets.arff", cls);
+        		//System.out.println("Classifing file "+"testTweets.arff");
+        		//ArrayList<double[]> hopefullyitwillwork = fcb.classifyARFF("testTweets.arff", cls);
         //for (double[] i : predicted) {
         //    System.out.println(i);
         //}

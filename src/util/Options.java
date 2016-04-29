@@ -12,29 +12,16 @@ public class Options {
 	private boolean selectedFeaturesByFrequency;
 	private boolean removeEmoticons;
 	private String classifierName;
-	private List<String> wmClassifiersName;
 	
 	/**
 	 * gets the list of classifiers' names in weighted majority
 	 * @return the list of classifiers' names in weighted majority
 	 */
-	public List<String> getWmClassifiersName() {
-		return wmClassifiersName;
-	}
-	
-	/**
-	 * sets a given list of classifiers' names in weighted majority
-	 * @param wmClassifiersName a list of classifiers' names
-	 */
-	public void setWmClassifiersName(List<String> wmClassifiersName) {
-		this.wmClassifiersName = wmClassifiersName;
-	}
-	
+
 	public Options() {
 		this.numFeatures = 0;
 		this.selectedFeaturesByFrequency = false;
 		this.removeEmoticons = true;
-		this.wmClassifiersName = new LinkedList<String>();
 	}
 	
 	/**

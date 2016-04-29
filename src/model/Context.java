@@ -17,7 +17,7 @@ public class Context {
     public void setTweetsRaw(){
     	
     }
-
+    
 	public static void setTweets(ObservableList<Tweet> tweets2) {
 		tweets = tweets2;		
 	}
